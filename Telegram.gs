@@ -1,5 +1,5 @@
 function getBotToken() {
-  return PropertiesService.getScriptProperties().getProperty('TELEGRAM_BOT_TOKEN') || "8852863589:AAHc4-n5Z7uMUpv3OoNLfCRaqgObdmZyxlg";
+  return PropertiesService.getScriptProperties().getProperty('TELEGRAM_BOT_TOKEN') || "ISI BOT TOKEN TELEGRAM KAMU";
 }
 
 function doPost(e) {
