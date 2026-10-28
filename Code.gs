@@ -1,8 +1,8 @@
-const FOLDER_ID = "1bbd1_GQRvT7DUsrblg3GN_9KTOGBDRG";
+const FOLDER_ID = "ISI ID FOLDER KAMU";
 
 // 1. Ambil Folder Target
 function getTargetFolder() {
-  const folderName = "Folder Automation v.2"; 
+  const folderName = "ISI NAMA FOLDER"; 
   const folders = DriveApp.getFoldersByName(folderName);
   if (folders.hasNext()) {
     return folders.next();
@@ -20,7 +20,7 @@ function getNotificationEmails() {
     
     for (let i = 0; i < sheets.length; i++) {
       const sheetName = sheets[i].getName().trim().toLowerCase();
-      if (sheetName === 'penerima') {
+      if (sheetName === 'ISI SHEET LIST PENERIMA EMAIL') {
         sheet = sheets[i];
         break;
       }
