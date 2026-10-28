@@ -1,9 +1,7 @@
-# drive-folder-automation
-project automation biar saya gak begadang cuman buat tutup akses folder aja.
-
 # Google Drive Folder Automation & Telegram Bot
 
 Sistem otomatisasi berbasis Google Apps Script untuk mengelola akses folder Google Drive secara dinamis, memantau aktivitas unggah/hapus file, serta mengirimkan notifikasi email otomatis ke banyak penerima dan bot Telegram.
+Alasan saya membuat sistem ini karena saya tidak ingin begadang hanya untuk menutup akses folder di Google Drive, dan menghindari besok paginya dimarahi atasan tidak menutup akses foldernya karena ketiduran
 
 ## 🚀 Fitur Utama
 - **Kontrol Akses via Telegram**: Membuka atau menutup akses folder Google Drive secara instan menggunakan perintah bot Telegram (`/open`, `/close`, `/status`).
