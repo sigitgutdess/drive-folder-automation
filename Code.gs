@@ -190,7 +190,7 @@ function logActivity(username, command, details) {
   }
 }
 
-// 12. Pemantau File Drive (Upload / Delete)
+// 12. Pemantau File Drive (Upload, Delete, & Edit) dengan Keterangan Nama Folder
 function checkDriveChanges() {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -198,46 +198,66 @@ function checkDriveChanges() {
     
     if (!sheet) {
       sheet = ss.insertSheet('Activity_Log');
-      sheet.appendRow(['Timestamp', 'Action', 'File Name', 'Uploader Name', 'Uploader Email']);
+      // Header log dengan kolom Action yang mencakup EDIT
+      sheet.appendRow(['Timestamp', 'Folder Name', 'Action', 'File Name', 'Uploader/Editor Name', 'Uploader/Editor Email']);
     }
     
-    const folder = getTargetFolder();
-    const files = folder.getFiles();
+    const targetFolders = getTargetFolders();
     const scriptProperties = PropertiesService.getScriptProperties();
-    const storedFilesJson = scriptProperties.getProperty('TRACKED_FILES');
-    let currentFilesMap = {};
+    const storedFilesJson = scriptProperties.getProperty('TRACKED_FILES_MULTI_EDIT');
     let oldFilesMap = storedFilesJson ? JSON.parse(storedFilesJson) : {};
-    
-    while (files.hasNext()) {
-      const file = files.next();
-      const fileId = file.getId();
-      const fileName = file.getName();
+    let currentFilesMap = {};
+
+    targetFolders.forEach(item => {
+      const folderName = item.name;
+      const files = item.folder.getFiles();
       
-      let uploaderName = "Unknown";
-      let uploaderEmail = "-";
-      try {
-        const owner = file.getOwner();
-        uploaderName = owner.getName() || owner.getEmail();
-        uploaderEmail = owner.getEmail();
-      } catch (e) {}
-      
-      currentFilesMap[fileId] = {
-        name: fileName,
-        nameUploader: uploaderName,
-        emailUploader: uploaderEmail
-      };
-      
-      if (!oldFilesMap[fileId]) {
-        sheet.appendRow([new Date(), 'UPLOAD', fileName, uploaderName, uploaderEmail]);
+      while (files.hasNext()) {
+        const file = files.next();
+        const fileId = file.getId();
+        const fileName = file.getName();
+        const lastUpdated = file.getLastUpdated().getTime(); // Waktu modifikasi terakhir file
+        
+        let editorName = "Unknown";
+        let editorEmail = "-";
+        try {
+          const owner = file.getOwner();
+          editorName = owner.getName() || owner.getEmail();
+          editorEmail = owner.getEmail();
+        } catch (e) {}
+        
+        currentFilesMap[fileId] = {
+          folderName: folderName,
+          name: fileName,
+          lastUpdated: lastUpdated,
+          nameUploader: editorName,
+          emailUploader: editorEmail
+        };
+        
+        // 1. Deteksi File Baru (UPLOAD)
+        if (!oldFilesMap[fileId]) {
+          sheet.appendRow([new Date(), folderName, 'UPLOAD', fileName, editorName, editorEmail]);
+        } 
+        // 2. Deteksi File yang Diedit (EDIT) berdasarkan perubahan waktu modifikasi
+        else if (oldFilesMap[fileId].lastUpdated !== lastUpdated) {
+          sheet.appendRow([new Date(), folderName, 'EDIT', fileName, editorName, editorEmail]);
+        }
       }
-    }
+    });
     
+    // 3. Deteksi File yang Dihapus (DELETE)
     for (let oldId in oldFilesMap) {
       if (!currentFilesMap[oldId]) {
         const deletedFile = oldFilesMap[oldId];
-        sheet.appendRow([new Date(), 'DELETE', deletedFile.name, deletedFile.nameUploader, deletedFile.emailUploader]);
+        sheet.appendRow([new Date(), deletedFile.folderName, 'DELETE', deletedFile.name, deletedFile.nameUploader, deletedFile.emailUploader]);
       }
     }
+    
+    scriptProperties.setProperty('TRACKED_FILES_MULTI_EDIT', JSON.stringify(currentFilesMap));
+  } catch (err) {
+    console.error("Error in checkDriveChanges: " + err.toString());
+  }
+}
     
     scriptProperties.setProperty('TRACKED_FILES', JSON.stringify(currentFilesMap));
   } catch (err) {
